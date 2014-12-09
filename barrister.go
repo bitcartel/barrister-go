@@ -3,6 +3,7 @@ package barrister
 import (
 	"bytes"
 	"crypto/rand"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,6 +13,7 @@ import (
 	"strings"
 )
 
+var Global_insecure_ssl bool = false
 var zeroVal reflect.Value
 
 // randHex generates a random array of bytes and
@@ -699,7 +701,11 @@ func (t *HttpTransport) Send(in []byte) ([]byte, error) {
 		t.Hook.Before(req, in)
 	}
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: Global_insecure_ssl},
+	}
+
+	client := &http.Client{Transport: tr}
 	if t.Jar != nil {
 		client.Jar = t.Jar
 	}
